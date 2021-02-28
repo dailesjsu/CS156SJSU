@@ -22,6 +22,7 @@ SOUTH = "S"
 EAST = "E"
 WEST = "W"
 
+
 def carrots_to_medal(sammy, medal, carrot_cost):
     """
     Compute the number of carrots that  Sammy consumes to reach the
@@ -33,7 +34,17 @@ def carrots_to_medal(sammy, medal, carrot_cost):
     :return: (integer) the number of carrots.
     """
     # Enter your code here and remove the pass statement below
-    pass
+    if sammy[0] >= medal[0]:
+        if sammy[1] >= medal[1]:
+            return ((sammy[0] - medal[0]) * carrot_cost[WEST]) + ((sammy[1] - medal[1]) * carrot_cost[NORTH]);
+        else:
+            return ((sammy[0] - medal[0]) * carrot_cost[WEST]) + ((medal[1] - sammy[1]) * carrot_cost[SOUTH]);
+    else:
+        if sammy[1] >= medal[1]:
+            return ((medal[0] - sammy[0]) * carrot_cost[EAST]) + ((sammy[1] - medal[1]) * carrot_cost[NORTH]);
+        else:
+            return ((medal[0] - sammy[0]) * carrot_cost[EAST]) + ((medal[1] - sammy[1]) * carrot_cost[SOUTH]);
+
 
 def min_carrots(sammy, medals, carrot_cost):
     """
@@ -46,7 +57,11 @@ def min_carrots(sammy, medals, carrot_cost):
     :return: (integer) the number of carrots.
     """
     # Enter your code here and remove the pass statement below
-    pass
+    if len(medals):
+        return min((carrots_to_medal(sammy, medal, carrot_cost)) for medal in medals)
+    else:
+        return "None"
+
 
 def most_carrots_medal(sammy, medals, carrot_cost):
     """
@@ -58,7 +73,10 @@ def most_carrots_medal(sammy, medals, carrot_cost):
     :return: (tuple) the position of the medal
     """
     # Enter your code here and remove the pass statement below
-    pass
+    if len(medals):
+        return max(medals, key=lambda p: (carrots_to_medal(sammy, p, carrot_cost)))
+    else:
+        return "None"
 
 def main():
     # The main function is used to test the 3 functions.
@@ -67,15 +85,15 @@ def main():
     print('----------Testing the carrots_to_medal function----------')
     print(carrots_to_medal(sammy1, (3, 1), carrot_cost1))  # 15
     print(carrots_to_medal(sammy1, (0, 8), carrot_cost1))  # 25
-    print(carrots_to_medal(sammy1, (10, 6), carrot_cost1)) # 9
-    print(carrots_to_medal(sammy1, (14, 3), carrot_cost1)) # 8
-    print(carrots_to_medal(sammy1, (13, 7), carrot_cost1)) # 18
-    print(carrots_to_medal(sammy1, (10, 3), carrot_cost1)) # 0
+    print(carrots_to_medal(sammy1, (10, 6), carrot_cost1))  # 9
+    print(carrots_to_medal(sammy1, (14, 3), carrot_cost1))  # 8
+    print(carrots_to_medal(sammy1, (13, 7), carrot_cost1))  # 18
+    print(carrots_to_medal(sammy1, (10, 3), carrot_cost1))  # 0
     print('----------')
     sammy2 = (2, 2)
-    carrot_cost2 = {NORTH: 1, EAST: 2, WEST: 3, SOUTH: 4 }
-    print(carrots_to_medal(sammy2, (3, 1), carrot_cost2))   # 3
-    print(carrots_to_medal(sammy2, (0, 8), carrot_cost2))   # 30
+    carrot_cost2 = {NORTH: 1, EAST: 2, WEST: 3, SOUTH: 4}
+    print(carrots_to_medal(sammy2, (3, 1), carrot_cost2))  # 3
+    print(carrots_to_medal(sammy2, (0, 8), carrot_cost2))  # 30
     print(carrots_to_medal(sammy2, (10, 6), carrot_cost2))  # 32
     print(carrots_to_medal(sammy2, (14, 3), carrot_cost2))  # 28
     print(carrots_to_medal(sammy2, (13, 7), carrot_cost2))  # 42
@@ -83,17 +101,18 @@ def main():
     print('----------Testing the min_carrots function----------')
     medals1 = {(3, 1), (0, 8), (13, 7), (1, 4), (10, 6), (14, 3)}
     medals2 = {(10, 3), (14, 3), (13, 7)}
-    print(min_carrots(sammy1, medals1, carrot_cost1)) # 8
-    print(min_carrots(sammy1, {}, carrot_cost1)) # None
-    print(min_carrots(sammy1, medals2, carrot_cost1)) # 0
+    print(min_carrots(sammy1, medals1, carrot_cost1))  # 8
+    print(min_carrots(sammy1, {}, carrot_cost1))  # None
+    print(min_carrots(sammy1, medals2, carrot_cost1))  # 0
     print(min_carrots(sammy2, medals1, carrot_cost2))  # 3
     print(min_carrots(sammy2, {}, carrot_cost2))  # None
     print(min_carrots(sammy2, medals2, carrot_cost2))  # 20
     print('-------Testing the most_carrots_medal function-------')
-    print(most_carrots_medal(sammy1, medals1, carrot_cost1)) # (0, 8)
+    print(most_carrots_medal(sammy1, medals1, carrot_cost1))  # (0, 8)
     print(most_carrots_medal(sammy1, {}, carrot_cost1))  # None
-    print(most_carrots_medal(sammy1, medals2, carrot_cost1)) # (13, 7)
-    print(most_carrots_medal(sammy1, medals2, carrot_cost2)) # (13, 7)
+    print(most_carrots_medal(sammy1, medals2, carrot_cost1))  # (13, 7)
+    print(most_carrots_medal(sammy1, medals2, carrot_cost2))  # (13, 7)
+
 
 if __name__ == '__main__':
     main()
