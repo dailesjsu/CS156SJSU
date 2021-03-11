@@ -2,7 +2,7 @@
 # Name:     informed_search
 # Purpose:  Homework 4 - Implement astar and some heuristics
 #
-# Author(s):
+# Author(s): Dai Le, Ngan Luu
 # ----------------------------------------------------------------------
 """
 A* Algorithm and heuristics implementation
@@ -15,7 +15,6 @@ Your task for homework 4 is to implement:
 """
 import data_structures
 
-
 def astar(problem, heuristic):
     """
     A* graph search algorithm
@@ -27,29 +26,23 @@ def astar(problem, heuristic):
     :return: list of actions representing the solution to the quest
                 or None if there is no solution
     """
-    closed = set()
+    # Enter your code here and remove the pass statement below
+    closed = set()  # keep track of our explored states
     fringe = data_structures.PriorityQueue()
     state = problem.start_state()
-    root = data_structures.Node(state)
-    fringe.push(root, heuristic(state, problem))
-
-    while True:
-        if fringe.is_empty():
-            return None
+    root = data_structures.Node(state, None, None)
+    fringe.push(root, root.cumulative_cost + heuristic(state, problem))
+    while not fringe.is_empty():
         node = fringe.pop()
         if problem.is_goal(node.state):
-            return node.solution()
-        if node.state not in closed:
+            return node.solution()  # we found a solution
+        if node.state not in closed:  # we are implementing graph search
             closed.add(node.state)
-            for child_state, action, action_cost in problem.successors(node.state):
-                # Tie Breaking
-                h = heuristic(child_state, problem)
-
-                h *= (1.0 + (1/100))
-                # if child_state not in closed:
-                child_node = data_structures.Node(child_state, node, action, action_cost + node.cumulative_cost)
-                f = child_node.cumulative_cost + h
-                fringe.push(child_node, f)
+            for child_state, action, action_cost in problem.expand(node.state):
+                child_node = data_structures.Node(child_state, node, action)
+                child_node.cumulative_cost = node.cumulative_cost + action_cost
+                fringe.push(child_node, child_node.cumulative_cost + heuristic(child_state, problem))
+    return None  # Failure -  no solution was found
 
 
 def null_heuristic(state, problem):
@@ -65,10 +58,22 @@ def null_heuristic(state, problem):
     """
     return 0
 
+def manhattan_distance(sammy, medal):
+    """
+    Find the Manhattan distance between sammy and medal.
+    :param sammy: (tuple) representing the position of Sammy in the grid
+    :param medal: (tuple) representing the position of medal in the grid
+    :return: (integer) the manhattan distance between sammy and medal
+    """
+    return abs(sammy[0]-medal[0]) + abs(sammy[1]-medal[1])
 
 def single_heuristic(state, problem):
     """
-    Fill in the docstring here
+    Simple Admissible heuristic, based on the Manhattan distance
+    Running A* with this single heuristic, gives us optimal solution a little faster than UCS
+    This heuristic is admissible because the manhattan distance is calculated without include
+    any cost (East, West, North, South).
+    Therefore, it will be smaller than actual cost.
     :param
     state: A state is represented by a tuple containing:
                 the current position of Sammy the Spartan
@@ -77,14 +82,39 @@ def single_heuristic(state, problem):
 
     :return:
     """
-    if state[1]:
-        return min_distance(state[0], state[1])
-    return 0
+    # Enter your code here and remove the pass statement below
+    sammy, medal = state
+    if len(medal):
+        return manhattan_distance(sammy, medal[0])
+    else:
+        return 0
 
+def manhattan_distance_cost(sammy, medal, problem):
+    """
+    Compute the number of carrot that Sammy eats to get to the medal
+    :param sammy: (tuple) representing the position of Sammy in the grid
+    :param medal: (tuple) representing the position of medal in the grid
+    :param problem: (a Problem object) representing the quest
+    :return: (integer) number of carrot Sammy eats to get to the medal
+    """
+    if sammy[0] >= medal[0]:
+        if sammy[1] >= medal[1]:
+            return ((sammy[0] - medal[0]) * problem.cost['W']) + ((sammy[1] - medal[1]) * problem.cost['N'])
+        else:
+            return ((sammy[0] - medal[0]) * problem.cost['W']) + ((medal[1] - sammy[1]) * problem.cost['N'])
+    else:
+        if sammy[1] >= medal[1]:
+            return ((medal[0] - sammy[0]) * problem.cost['E']) + ((sammy[1] - medal[1]) * problem.cost['N'])
+        else:
+            return ((medal[0] - sammy[0]) * problem.cost['E']) + ((medal[1] - sammy[1]) * problem.cost['N'])
 
 def better_heuristic(state, problem):
     """
-    Fill in the docstring here
+    Better than single heuristic, based on the Manhattan distance and cost
+    Running A* with this better heuristic, gives us optimal solution faster than single heuristic
+    This heuristic is admissible and consistent because it use manhattan distance with cost of moves
+    Thus, its calculation is closer to actual cost than single_heuristic, but it is still smaller than
+    actual cost.
     :param
     state: A state is represented by a tuple containing:
                 the current position of Sammy the Spartan
@@ -93,31 +123,20 @@ def better_heuristic(state, problem):
     :return:
     """
     # Enter your code here and remove the pass statement below
-    if state[1]:
-        start = problem.start_state()[0]
-        goal = state[1][0]
-        position = state[0]
-        D = 1
-        D2 = 1
-
-        # Check where the state is in relation to the start state
-        if position[1] > goal[1]: # Moved East
-            D = 1
-        if position[1] < goal[1]: # Moved West
-            D = 6
-        if position[0] > goal[0]: # Moved South
-            D2 = 2
-        if position[0] < goal[0]: # Moved North
-            D2 = 1
-        return (D2 * abs(position[0] - goal[0])) + (D * abs(position[1] - goal[1]))
-    return 0
-
-
-
+    sammy, medal = state
+    if len(medal):
+        return manhattan_distance_cost(sammy, medal[0], problem)
+    else:
+        return 0
 
 def gen_heuristic(state, problem):
     """
-    Fill in the docstring here
+    Consistent and admissible heuristic, used for general problems with multiple medals.
+    Running A* with this gen heuristic, gives us optimal solution faster than better heuristic
+    This heuristic is admissible and consistent because the result is from the position of the medal
+    that Sammy consumes the most carrot to reach.
+    Thus, we can get the heuristic is at most close to the actual cost
+    Also, because of max function, we get closer to the true cost, we will expand fewer nodes.
     :param
     state: A state is represented by a tuple containing:
                 the current position of Sammy the Spartan
@@ -125,28 +144,9 @@ def gen_heuristic(state, problem):
     problem: (a Problem object) representing the quest
     :return:
     """
-    if state[1]:
-        goals = state[1]
-        start = problem.start_state()[0]
-        heru = []
-        sum  = 0
-        position = state[0]
-
-        for goal in goals:
-            D = 1
-            D2 = 1
-            # Check where the state is in relation to the start state
-            if position[1] > goal[1]:  # Moved East
-                D = 1
-            if position[1] < goal[1]:  # Moved West
-                D = 6
-            if position[0] > goal[0]:  # Moved South
-                D2 = 2
-            if position[0] < goal[0]:  # Moved North
-                D2 = 1
-
-            sum += (D2 * abs(position[0] - goal[0])) + (D * abs(position[1] - goal[1]))
-            #heru.sort()
-
-        return sum / len(goals)
-    return 0
+    # Enter your code here and remove the pass statement below
+    sammy, medal = state
+    if medal:
+        return max(manhattan_distance_cost(sammy, medl, problem) for medl in medal)
+    else:
+        return 0
